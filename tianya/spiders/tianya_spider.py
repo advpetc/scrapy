@@ -71,51 +71,33 @@ from scrapy.http import Request
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.selector import Selector
-# import datetime
-# import re
-# import time
 import scrapy
 import sys
-# from urlparse import urljoin
-# from hashlib import md5
-#from pybloomfilter import BloomFilter
-# from urlparse import parse_qs, urlparse
+import urllib
 
 sys.stdout=open('output.txt','w')
-
 class TianyanSpider(CrawlSpider):
 	name="tianya"
 	allowed_domains=["http://bbs.tianya.cn"]
 	start_urls=["http://bbs.tianya.cn/list-416-1.shtml"]
 	#download_delay=2
-	#start_urls=["http://bbs.tianya.cn/post-416-105171-1.shtml"]
 	
-	rules=[Rule(LinkExtractor(allow=('/list.jsp'),deny=('javascript:'),restrict_xpaths=('//div[@class="links"]')),callback='parse',follow=True)]		
-	
-
 	def parse(self,response):
-		#sel=Selector(response)		
+		#sel=Selector(response)	
 		text_handle=response.xpath('//td[@class="td-title faceblue"]')
 		http_buffer="http://bbs.tianya.cn"		
-		items=[]
+
 		for text in text_handle:
 			item=TianyaItem()
 			link=http_buffer+text.xpath('a/@href').extract()[0]#get the title-url to redirect
-			item['title']=text.xpath('a/text()').extract()	
-									
-			# sys.stdout.write(item['title'][0].encode('utf-8'))
-# 			sys.stdout.write('\n')		
-# 			sys.stdout.write(link)
-# 			sys.stdout.write('\n')			
+			item['title']=text.xpath('a/text()').extract()										
 
-			#yield item
 			yield Request(link,callback=self.parse_content,meta={'item':item},dont_filter=True)
-# 			yield Request(link, callback=self.parse_content,dont_filter=True)
-			items.append(item)
-			yield items
-		#file_handle.close()		
-		sys.stdout.write('next page')
 
+		next_page=http_buffer+response.xpath('//div[@class="links"]/a[@rel="nofollow"]/@href').extract()[0]
+		sys.stdout.write(next_page)
+		yield Request(next_page,callback=self.parse,dont_filter=True)
+		
 		
 		
 		#file_handle=open('test.txt','w')
@@ -129,17 +111,12 @@ class TianyanSpider(CrawlSpider):
 		item=response.meta['item']
         
 		text_handle2=response.xpath('//div[@class="bbs-content clearfix"]/text()').extract()
-		#print text_handle2		
-		#file_handle=open('text.txt','w')	
-# 		items=[]
-		
-# 		item=TianyaItem()
 		item['answer']=text_handle2
-		
-		# sys.stdout.write('\n')
-# 		sys.stdout.write(text_handle2[0].encode('utf-8'))
 		yield item
-
+	# 
+# 	def parse_next_page(self,response):
+# 		item=response.meta['item']
+# 		yield Request(response.url,callback=self.parse)
 
 
 

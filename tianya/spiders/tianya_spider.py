@@ -93,18 +93,10 @@ class TianyanSpider(CrawlSpider):
 			item['title']=text.xpath('a/text()').extract()										
 
 			yield Request(link,callback=self.parse_content,meta={'item':item},dont_filter=True)
-
-		next_page=http_buffer+response.xpath('//div[@class="links"]/a[@rel="nofollow"]/@href').extract()[0]
-		sys.stdout.write(next_page)
-		yield Request(next_page,callback=self.parse,dont_filter=True)
-		
-		
-		
-		#file_handle=open('test.txt','w')
-		#for text in text_handle:
-		#	print text			
-		#	file_handle.write(text.encode('utf-8'))
-		#file_handle.close()		
+		test=response.xpath('//div[@class="links"]/a[@rel="nofollow"]/@href').extract()
+		if len(test)>0:
+			next_page=http_buffer+test[0]
+			yield Request(next_page,callback=self.parse,dont_filter=True)
 		
 
 	def parse_content(self,response):
@@ -113,15 +105,3 @@ class TianyanSpider(CrawlSpider):
 		text_handle2=response.xpath('//div[@class="bbs-content clearfix"]/text()').extract()
 		item['answer']=text_handle2
 		yield item
-	# 
-# 	def parse_next_page(self,response):
-# 		item=response.meta['item']
-# 		yield Request(response.url,callback=self.parse)
-
-
-
-
-
-
-
-

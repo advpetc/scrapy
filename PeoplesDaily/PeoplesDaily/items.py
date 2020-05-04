@@ -14,3 +14,4 @@ class PeoplesdailyItem(scrapy.Item):
     title = scrapy.Field()
     url = scrapy.Field()
     content = scrapy.Field()
+    date = scrapy.Field()

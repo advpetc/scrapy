@@ -70,9 +70,10 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'PeoplesDaily.pipelines.PeoplesdailyPipeline': 300,
-# }
+ITEM_PIPELINES = {
+   'PeoplesDaily.pipelines.MongoPipeline': 300,
+   # 'PeoplesDaily.pipelines.JsonWithEncodingPipeline': 600
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -94,3 +95,6 @@ DEFAULT_REQUEST_HEADERS = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# MongoDB
+MONGO_URI = 'mongodb://127.0.0.1:27017/'

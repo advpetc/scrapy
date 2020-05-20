@@ -25,13 +25,11 @@ import logging
 class ParagraphSiper(CrawlSpider):
     name = "test"
     http_buffer = "http://data.people.com.cn"
-    page_cnt = 6
+    page_cnt = 1
     # use cookie instead of explict login info, TODO
     cookie = {
-        "JSESSIONID": "04337EE5F6C5D6352103646CB97791BC",
-        "validateCode": "uOnVMc3TNci8eOl9hQ3nrg%3D%3D",
-        # "pageSize": 20,
-        # "pageNo": 2
+        "JSESSIONID": "DD24AA8738A6CCC9DCC8B66062D2960B",
+        "validateCode": "qNX2bJZleCr7ugvYTrG7gg%3D%3D"
     }
     query = {"cId": "38", "cds": [{"fld": "dataTime.start", "cdr": "AND", "hlt": "false", "vlr": "AND", "qtp": "DEF", "val": "2001-01-01"}, {
         "fld": "dataTime.end", "cdr": "AND", "hlt": "false", "vlr": "AND", "qtp": "DEF", "val": "2020-05-02"}], "obs": [{"fld": "dataTime", "drt": "DESC"}]}
@@ -45,6 +43,10 @@ class ParagraphSiper(CrawlSpider):
 
     def parse(self, response):
         soup = BeautifulSoup(response.body, 'html.parser')
+
+        if '未登录' in soup.text:
+            logging.error("please retype in the cookies")
+            return
         raw = set(soup.find_all("a", target="_blank", href=True))
         urls = []
         for url in raw:
@@ -72,14 +74,10 @@ class ParagraphSiper(CrawlSpider):
         soup = BeautifulSoup(response.body, 'html.parser')
         raw = soup.find_all("div", {"class": "detail"})
         if len(raw) == 0:
+            body = soup.find('body')
             self.verifying = True
             self.crawler.engine.pause()
             open_in_browser(response)
-            # img = urllib.request.urlretrieve(self.http_buffer+"/servlet/validateCodeServlet", "captcha.jpeg")
-            # yield Request(self.http_buffer+"/servlet/validateCodeServlet", method='GET',
-            #               cookies=self.cookie,
-            #               callback=self.parse_captcha)
-            # self.crawler.engine.unpause()
             logging.error("Please enter captcha")
             if input("Have you finished?"):
                 self.crawler.engine.unpause()
@@ -92,5 +90,4 @@ class ParagraphSiper(CrawlSpider):
             time_index = raw[0].text.find("时间：")
             response.meta['item']['date'] = raw[0].text[time_index+3:time_index+13]
             response.meta['item']['content'] = raw[0].text[time_index+13:].strip()
-    # def parse_captcha(self, response):
-    #     captcha = response.body
+            yield response.meta['item']
